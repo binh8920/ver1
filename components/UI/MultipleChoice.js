@@ -1,58 +1,57 @@
-import React from 'react';
-import { StyleSheet, View, Text, CheckBox } from 'react-native';
+import React from "react";
+import { StyleSheet, View, Text } from "react-native";
+import CheckBox from "@react-native-community/checkbox";
+import PropTypes from "prop-types";
 
-const CSChoices = props => {
-    return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Stop Over Status</Text>
-            <View style={styles.checkboxContainer}>
-                <CheckBox
-                    value={props.initialValue}
-                    onValueChange={props.onSelect}
-                    style={styles.checkbox}
-                />
-                <Text style={styles.label}>Maybe Accepting Guest</Text>
-            </View>
-            <View style={styles.checkboxContainer}>
-                <CheckBox
-                    value={props.initialValue}
-                    onValueChange={props.onSelect}
-                    style={styles.checkbox}
-                />
-                <Text style={styles.label}>Not Accepting Guest</Text>
-            </View>
-            <View style={styles.checkboxContainer}>
-                <CheckBox
-                    value={props.initialValue}
-                    onValueChange={props.onSelect}
-                    style={styles.checkbox}
-                />
-                <Text style={styles.label}>Accepting Guest</Text>
-            </View>
-        </View>
-    );
+const CSChoices = (props) => {
+  const { onChecked, value, title, id, currentId } = props;
+
+  const onCheckHandler = (val) => {
+    if (val) {
+      onChecked && onChecked(value, id);
+      return;
+    }
+    onChecked && onChecked(null, id);
+  };
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.checkboxContainer}>
+        <CheckBox
+          onValueChange={(val) => {
+            onCheckHandler(val);
+          }}
+          value={id === currentId}
+        />
+        <Text style={styles.label}>{title}</Text>
+      </View>
+    </View>
+  );
+};
+
+CSChoices.propTypes = {
+  onChecked: PropTypes.func,
+  value: PropTypes.string,
+  title: PropTypes.string,
+  id: PropTypes.number,
+  currentId: PropTypes.number,
 };
 
 const styles = StyleSheet.create({
-    title: {
-        fontSize: 16,
-        fontFamily: 'open-sans-bold',
-        marginBottom: 10
-    },
-    container: {
-        margin: 10
-    },
-    checkboxContainer: {
-        flexDirection: "row",
-        marginBottom: 20,
-    },
-    checkbox: {
-        alignSelf: "center",
-    },
-    label: {
-        margin: 8,
-        fontFamily: 'open-sans'
-    },
+  container: {
+    margin: 10,
+  },
+  checkboxContainer: {
+    flexDirection: "row",
+    marginBottom: 10,
+  },
+  checkbox: {
+    alignSelf: "center",
+  },
+  label: {
+    margin: 8,
+    fontFamily: "open-sans",
+  },
 });
 
 export default CSChoices;

@@ -1,28 +1,30 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { createStore, combineReducers, applyMiddleware } from 'redux';
-import { Provider } from 'react-redux';
-import AppLoading from 'expo-app-loading';
-import * as Font from 'expo-font';
-import ReduxThunk from 'redux-thunk';
+import React, { useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
+import { createStore, combineReducers, applyMiddleware } from "redux";
+import { Provider } from "react-redux";
+import AppLoading from "expo-app-loading";
+import * as Font from "expo-font";
+import ReduxThunk from "redux-thunk";
 
-import profileReducer from './store/reducers/profile';
-import requestReducer from './store/reducers/request';
-import acceptReducer from './store/reducers/accept';
-import ProfileNavigator from './navigation/Navigator';
+import profileReducer from "./store/reducers/profile";
+import requestReducer from "./store/reducers/request";
+import acceptReducer from "./store/reducers/accept";
+import authReducer from "./store/reducers/auth";
+import NavigationContainer from "./navigation/NavigationContainer";
 
 const rootReducer = combineReducers({
   profile: profileReducer,
   request: requestReducer,
-  accept: acceptReducer
+  accept: acceptReducer,
+  auth: authReducer,
 });
 
 const store = createStore(rootReducer, applyMiddleware(ReduxThunk));
 
 const fetchFonts = () => {
   return Font.loadAsync({
-    'open-sans': require('./assets/fonts/OpenSans-Regular.ttf'),
-    'open-sans-bold': require('./assets/fonts/OpenSans-Bold.ttf')
+    "open-sans": require("./assets/fonts/OpenSans-Regular.ttf"),
+    "open-sans-bold": require("./assets/fonts/OpenSans-Bold.ttf"),
   });
 };
 
@@ -41,8 +43,7 @@ export default function App() {
 
   return (
     <Provider store={store}>
-      <ProfileNavigator />
+      <NavigationContainer />
     </Provider>
   );
 }
-
