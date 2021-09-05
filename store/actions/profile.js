@@ -19,6 +19,7 @@ export const fetchProfiles = () => {
 
       const resData = await response.json();
       console.log(resData);
+      console.log(userId);
       const loadedProfiles = [];
 
       for (const key in resData) {
@@ -101,7 +102,7 @@ export const createProfile = (
       {
         method: "POST",
         headers: {
-          "Content-type": "application.json",
+          "Content-type": "application/json",
         },
         body: JSON.stringify({
           privateId: userId,
@@ -183,7 +184,7 @@ export const editProfile = (
       {
         method: "PATCH",
         headers: {
-          "Content-type": "application.json",
+          "Content-type": "application/json",
         },
         body: JSON.stringify({
           name,

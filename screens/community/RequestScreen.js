@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -17,12 +17,16 @@ import RequestItem from "../../components/request/RequestItem";
 
 const RequestScreen = (props) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(false);
   const totalRequest = useSelector((state) => state.request.totalRequest);
+
   const requestItems = useSelector((state) => {
     const transformedRequestItems = [];
     for (const key in state.request.requests) {
       transformedRequestItems.push({
-        profileId: key,
+        requestId: key,
+        profileId: state.request.requests[key].profileId,
+        privateUserId: state.request.requests[key].privateUserId,
         profileName: state.request.requests[key].profileName,
         profileGender: state.request.requests[key].profileGender,
         profileAge: state.request.requests[key].profileAge,
@@ -34,11 +38,22 @@ const RequestScreen = (props) => {
 
   const dispatch = useDispatch();
 
+  useEffect(() => {
+    setIsFetching(true);
+    dispatch(requestActions.fetchRequest());
+  }, [dispatch]);
+
   const acceptRequestHandler = async () => {
     setIsLoading(true);
     await dispatch(acceptActions.acceptUser(requestItems, totalRequest));
     setIsLoading(false);
   };
+
+  if (isFetching) {
+    <View style={styles.centered}>
+      <ActivityIndicator size="large" color={Colors.darkGrey} />
+    </View>;
+  }
 
   return (
     <View style={styles.screen}>
@@ -59,15 +74,16 @@ const RequestScreen = (props) => {
       </Card>
       <FlatList
         data={requestItems}
-        keyExtractor={(item) => item.profileId}
+        keyExtractor={(item) => item.requestId}
         renderItem={(itemData) => (
           <RequestItem
             name={itemData.item.profileName}
             gender={itemData.item.profileGender}
             age={itemData.item.profileAge}
+            address={itemData.item.profileAddress}
             deletable
             onRemove={() => {
-              dispatch(requestActions.removeRequest(itemData.item.profileId));
+              dispatch(requestActions.removeRequest(itemData.item.requestId));
             }}
           />
         )}
@@ -93,6 +109,11 @@ const styles = StyleSheet.create({
   },
   amount: {
     color: Colors.primary,
+  },
+  centered: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 

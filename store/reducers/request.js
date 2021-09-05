@@ -1,16 +1,28 @@
-import { REQUEST_TO_HOST, REMOVE_REQUEST } from "../actions/request";
+import {
+  REQUEST_TO_HOST,
+  REMOVE_REQUEST,
+  SET_REQUEST,
+} from "../actions/request";
 import { ACCEPT_USER } from "../actions/accept";
 import Request from "../../models/request";
 
 const initialState = {
-  requests: {},
+  requests: [],
   totalRequest: 0,
 };
 
 export default (state = initialState, action) => {
   switch (action.type) {
+    case SET_REQUEST: {
+      return {
+        requests: action.requests,
+        totalRequest: action.totalRequest,
+      };
+    }
     case REQUEST_TO_HOST: {
       const requestedProfile = action.profile;
+      const profProfileId = requestedProfile.profProfileId;
+      const profPrivateUserId = requestedProfile.privateUserId;
       const profName = requestedProfile.name;
       const profAge = requestedProfile.age;
       const profGender = requestedProfile.gender;
@@ -21,6 +33,8 @@ export default (state = initialState, action) => {
         return { ...state };
       } else {
         const newRequest = new Request(
+          profProfileId,
+          profPrivateUserId,
           profName,
           profGender,
           profAge,
