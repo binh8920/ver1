@@ -1,9 +1,20 @@
 import moment from "moment";
 
 class Acceptance {
-  constructor(id, requests, totalRequest, date) {
+  constructor(
+    id,
+    requestId,
+    requestName,
+    requestAge,
+    requestGender,
+    totalRequest,
+    date
+  ) {
     (this.id = id),
-      (this.requests = requests),
+      (this.requestId = requestId),
+      (this.requestName = requestName),
+      (this.requestAge = requestAge),
+      (this.requestGender = requestGender),
       (this.totalRequest = totalRequest),
       (this.date = date);
   }

@@ -22,7 +22,10 @@ export const fetchAcceptances = () => {
         loadedAcceptances.push(
           new Acceptance(
             key,
-            resData[key].requests,
+            resData[key].requestId,
+            resData[key].requestName,
+            resData[key].requestAge,
+            resData[key].requestGender,
             resData[key].totalRequest,
             new Date(resData[key].date)
           )
@@ -38,7 +41,14 @@ export const fetchAcceptances = () => {
   };
 };
 
-export const acceptUser = (requestedProfile, totalRequest) => {
+export const acceptUser = (
+  requestId,
+  requestName,
+  requestAge,
+  requestGender,
+  totalRequest,
+  guestPushToken
+) => {
   return async (dispatch, getState) => {
     const token = getState().auth.token;
     const userId = getState().auth.userId;
@@ -52,10 +62,20 @@ export const acceptUser = (requestedProfile, totalRequest) => {
           "Content-type": "application/json",
         },
         body: JSON.stringify({
-          requestedProfile,
+          requestId,
+          requestName,
+          requestAge,
+          requestGender,
           totalRequest,
           date: date.toISOString(),
         }),
+      }
+    );
+
+    await fetch(
+      `https://final-project-ver2-default-rtdb.firebaseio.com/requests/${requestId}.json?auth=${token}`,
+      {
+        method: "DELETE",
       }
     );
 
@@ -69,10 +89,28 @@ export const acceptUser = (requestedProfile, totalRequest) => {
       type: ACCEPT_USER,
       acceptData: {
         id: resData.name,
-        requests: requestedProfile,
-        amount: totalRequest,
+        requestId: requestId,
+        requestName: requestName,
+        requestAge: requestAge,
+        requestGender: requestGender,
+        totalRequest: totalRequest,
         date: date,
       },
+      requestId: requestId,
+    });
+
+    fetch("https://exp.host/--/api/v2/push/send", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Accept-Encoding": "gzip, deflate",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        to: guestPushToken,
+        title: `You are accepted`,
+        body: date.toISOString(),
+      }),
     });
   };
 };

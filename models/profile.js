@@ -18,7 +18,10 @@ class Profile {
     hostOffer,
     address,
     maxGuest,
-    sleepingArrangement
+    sleepingArrangement,
+    latitude,
+    longitude,
+    privatePushToken
   ) {
     (this.id = id),
       (this.privateId = privateId),
@@ -37,7 +40,10 @@ class Profile {
       (this.hostOffer = hostOffer),
       (this.address = address),
       (this.maxGuest = maxGuest),
-      (this.sleepingArrangement = sleepingArrangement);
+      (this.sleepingArrangement = sleepingArrangement),
+      (this.latitude = latitude),
+      (this.longitude = longitude),
+      (this.privatePushToken = privatePushToken);
   }
 }
 

@@ -1,9 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { FlatList, ActivityIndicator, View, Text, Button } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
-import { HeaderButtons, Item } from "react-navigation-header-buttons";
 
-import HeaderButton from "../../components/UI/HeaderButton";
 import ProfileItem from "../../components/profile/ProfileItem";
 import * as profileActions from "../../store/actions/profile";
 import Colors from "../../constants/Colors";

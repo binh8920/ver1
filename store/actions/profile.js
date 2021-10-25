@@ -3,7 +3,10 @@ export const EDIT_PROFILE = "EDIT_PROFILE";
 export const DELETE_PROFILE = "DELETE_PROFILE";
 export const SET_PROFILE = "SET_PROFILE";
 
+import * as Notifications from "expo-notifications";
+import * as Permissions from "expo-permissions";
 import Profile from "../../models/profile";
+import ENV from "../../env";
 
 export const fetchProfiles = () => {
   return async (dispatch, getState) => {
@@ -18,12 +21,10 @@ export const fetchProfiles = () => {
       }
 
       const resData = await response.json();
-      console.log(resData);
-      console.log(userId);
       const loadedProfiles = [];
 
       for (const key in resData) {
-        loadedProfiles.push(
+        await loadedProfiles.push(
           new Profile(
             key,
             resData[key].privateId,
@@ -42,14 +43,17 @@ export const fetchProfiles = () => {
             resData[key].hostOffer,
             resData[key].address,
             resData[key].maxGuest,
-            resData[key].sleepingArrangement
+            resData[key].sleepingArrangement,
+            resData[key].latitude,
+            resData[key].longitude,
+            resData[key].privatePushToken
           )
         );
       }
 
       dispatch({
         type: SET_PROFILE,
-        profiles: loadedProfiles,
+        profiles: loadedProfiles.filter((prof) => prof.privateId !== userId),
         privateProfile: loadedProfiles.find(
           (prof) => prof.privateId === userId
         ),
@@ -90,13 +94,39 @@ export const createProfile = (
   interest,
   reasonForCS,
   hostOffer,
-  address,
+  location,
   maxGuest,
   sleepingArrangement
 ) => {
   return async (dispatch, getState) => {
+    let pushToken;
+    let statusObject = await Permissions.getAsync(Permissions.NOTIFICATIONS);
+    if (statusObject.status !== "granted") {
+      statusObject = await Permissions.askAsync(Permissions.NOTIFICATIONS);
+    }
+    if (statusObject.status !== "granted") {
+      pushToken = null;
+    } else {
+      pushToken = (await Notifications.getExpoPushTokenAsync()).data;
+    }
+
     const token = getState().auth.token;
     const userId = getState().auth.userId;
+    const responseLocation = await fetch(
+      `https://maps.googleapis.com/maps/api/geocode/json?latlng=${location.lat},${location.lng}&key=${ENV.googleApiKey}`
+    );
+
+    if (!responseLocation.ok) {
+      throw new Error("Something went wrong!");
+    }
+
+    const resLocation = await responseLocation.json();
+    if (!resLocation.results) {
+      throw new Error("Something went wrong!");
+    }
+
+    const address = resLocation.results[0].formatted_address;
+
     const response = await fetch(
       `https://final-project-ver2-default-rtdb.firebaseio.com/profiles.json?auth=${token}`,
       {
@@ -122,6 +152,9 @@ export const createProfile = (
           address,
           maxGuest,
           sleepingArrangement,
+          latitude: location.lat,
+          longitude: location.lng,
+          privatePushToken: pushToken,
         }),
       }
     );
@@ -149,6 +182,9 @@ export const createProfile = (
         address,
         maxGuest,
         sleepingArrangement,
+        latitude: location.lat,
+        longitude: location.lng,
+        privatePushToken: pushToken,
       },
     });
   };
@@ -169,16 +205,41 @@ export const editProfile = (
   interest,
   reasonForCS,
   hostOffer,
-  address,
+  location,
   maxGuest,
-  sleepingArrangement,
-  isParents,
-  isPetLover,
-  isSmoker,
-  references
+  sleepingArrangement
 ) => {
   return async (dispatch, getState) => {
+    let pushToken;
+    let statusObject = await Permissions.getAsync(Permissions.NOTIFICATIONS);
+    if (statusObject.status !== "granted") {
+      statusObject = await Permissions.askAsync(Permissions.NOTIFICATIONS);
+    }
+    if (statusObject.status !== "granted") {
+      pushToken = null;
+    } else {
+      pushToken = (await Notifications.getExpoPushTokenAsync()).data;
+      console.log(pushToken);
+    }
+
     const token = getState().auth.token;
+    const response = await fetch(
+      `https://maps.googleapis.com/maps/api/geocode/json?latlng=${location.lat},${location.lng}&key=${ENV.googleApiKey}`
+    );
+
+    if (!response.ok) {
+      throw new Error("Something went wrong!");
+    }
+
+    const resData = await response.json();
+    console.log(resData);
+    if (!resData.results) {
+      throw new Error("Something went wrong!");
+    }
+
+    const address = resData.results[0].formatted_address;
+    console.log(address);
+
     await fetch(
       `https://final-project-ver2-default-rtdb.firebaseio.com/profiles/${id}.json?auth=${token}`,
       {
@@ -203,6 +264,9 @@ export const editProfile = (
           address,
           maxGuest,
           sleepingArrangement,
+          latitude: location.lat,
+          longitude: location.lng,
+          privatePushToken: pushToken,
         }),
       }
     );
@@ -227,10 +291,9 @@ export const editProfile = (
         address,
         maxGuest,
         sleepingArrangement,
-        isParents,
-        isPetLover,
-        isSmoker,
-        references,
+        latitude: location.lat,
+        longitude: location.lng,
+        privatePushToken: pushToken,
       },
     });
   };

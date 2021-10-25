@@ -14,12 +14,14 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useDispatch } from "react-redux";
+import { MaterialIcons } from "@expo/vector-icons";
 
 import ProfileOverviewScreen from "../screens/community/ProfileOverviewScreen";
 import FilterHostScreen from "../screens/community/FilterHostScreen";
 import RequestScreen from "../screens/community/RequestScreen";
 import SearchScreen from "../screens/community/SearchScreen";
 import AcceptScreen from "../screens/community/AcceptScreen";
+import MapScreen from "../screens/community/MapScreen";
 import ProfileDetailScreen from "../screens/community/ProfileDetailScreen";
 import EditProfileScreen from "../screens/user/EditProfileScreen";
 import ReferencesScreen from "../screens/user/ReferencesScreen";
@@ -56,8 +58,8 @@ const ProfileNavigator = createStackNavigator(
 const SearchNavigator = createStackNavigator(
   {
     Hosts: ProfileOverviewScreen,
-    Filter: FilterHostScreen,
     Profile: ProfileDetailScreen,
+    References: ReferencesScreen,
   },
   {
     defaultNavigationOptions: defaultNavOptions,
@@ -82,7 +84,26 @@ const AcceptNavigator = createStackNavigator(
   }
 );
 
+const MapNavigator = createStackNavigator(
+  {
+    Map: MapScreen,
+  },
+  {
+    defaultNavigationOptions: defaultNavOptions,
+  }
+);
 const tabScreenConfig = {
+  Explore: {
+    screen: MapNavigator,
+    navigationOptions: {
+      tabBarIcon: (tabIcon) => {
+        return (
+          <MaterialIcons name="explore" size={25} color={tabIcon.tintColor} />
+        );
+      },
+      tabBarColor: Colors.navy,
+    },
+  },
   Searching: {
     screen: SearchNavigator,
     navigationOptions: {
@@ -144,9 +165,10 @@ const AppTabsNavigator =
 const AppNavigator = createDrawerNavigator(
   {
     AppTabs: AppTabsNavigator,
+    Map: MapNavigator,
   },
   {
-    drawerBackgroundColor: Colors.almond,
+    drawerBackgroundColor: Colors.navy,
     drawerWidth: 200,
     contentComponent: (props) => {
       const dispatch = useDispatch();
@@ -154,7 +176,6 @@ const AppNavigator = createDrawerNavigator(
         <View style={{ flex: 1, paddingTop: 20 }}>
           <SafeAreaView forceInset={{ top: "always", horizontal: "never" }}>
             <TouchableOpacity
-              style={styles.logout}
               onPress={() => {
                 dispatch(authActions.logout());
                 // props.navigation.navigate("Auth");
@@ -196,13 +217,13 @@ const MainNavigator = createSwitchNavigator({
 
 const styles = StyleSheet.create({
   logout: {
-    width: "80%",
+    width: "70%",
     height: 50,
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 10,
-    marginLeft: 12,
-    marginTop: 30,
+    marginLeft: 30,
+    marginTop: 50,
   },
   textLogout: {
     fontFamily: "open-sans",

@@ -1,7 +1,16 @@
-import React from "react";
-import { ScrollView, View, StyleSheet, SafeAreaView } from "react-native";
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  ScrollView,
+  View,
+  StyleSheet,
+  SafeAreaView,
+  TouchableOpacity,
+  ActivityIndicator,
+  Text,
+  Alert,
+} from "react-native";
 import { useSelector, useDispatch } from "react-redux";
-import { Button } from "react-native-elements";
+import { LinearGradient } from "expo-linear-gradient";
 
 import Colors from "../../constants/Colors";
 import AvatarSection from "../../components/profile/AvatarSection";
@@ -12,11 +21,43 @@ import ExperienceSection from "../../components/profile/ExperienceSection";
 import * as requestActions from "../../store/actions/request";
 
 const ProfileDetailScreen = (props) => {
+  const [isLoading, setIsLoading] = useState(false);
   const profileId = props.navigation.getParam("profileId");
   const selectedProfile = useSelector((state) =>
-    state.profile.allProfile.find((prod) => prod.id === profileId)
+    state.profile.allProfile.find((prof) => prof.id === profileId)
   );
+  const privateProfile = useSelector((state) => state.profile.privateProfile);
   const dispatch = useDispatch();
+
+  const onRequest = useCallback(async () => {
+    if (privateProfile) {
+      setIsLoading(true);
+      await dispatch(
+        requestActions.requestToHost(
+          selectedProfile.privateId,
+          privateProfile.name,
+          privateProfile.gender,
+          privateProfile.age,
+          privateProfile.privatePushToken
+        )
+      );
+      setIsLoading(false);
+    } else {
+      Alert.alert(
+        "You have to create your profile!",
+        "Please create your profile to request hosts.",
+        [{ text: "Okay" }]
+      );
+      return;
+    }
+  }, [dispatch]);
+
+  const goToReferenceScreenHandler = () => {
+    props.navigation.navigate("References", {
+      profId: selectedProfile.id,
+      profPrivateId: selectedProfile.privateId,
+    });
+  };
 
   return (
     <ScrollView>
@@ -31,7 +72,7 @@ const ProfileDetailScreen = (props) => {
         <StatusSection
           address={selectedProfile.address}
           couchStatus={selectedProfile.couchStatus}
-          references={selectedProfile.references}
+          onRating={goToReferenceScreenHandler}
         />
 
         <ConditionSection
@@ -53,15 +94,26 @@ const ProfileDetailScreen = (props) => {
           hostOffer={selectedProfile.hostOffer}
         />
 
-        <View style={{ alignItems: "center", margin: 20 }}>
-          <Button
-            title="Request Host"
-            color={Colors.mango}
-            onPress={() => {
-              dispatch(requestActions.requestToHost(selectedProfile));
+        {isLoading ? (
+          <ActivityIndicator size="small" color={Colors.mango} />
+        ) : (
+          <View
+            style={{
+              alignItems: "center",
+              marginBottom: 20,
+              justifyContent: "center",
             }}
-          />
-        </View>
+          >
+            <TouchableOpacity onPress={onRequest}>
+              <LinearGradient
+                colors={[Colors.mango, "#f7b42c"]}
+                style={styles.logout}
+              >
+                <Text style={styles.textLogout}>Request Host</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+        )}
       </SafeAreaView>
     </ScrollView>
   );
@@ -70,6 +122,24 @@ const ProfileDetailScreen = (props) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  button: {
+    borderRadius: 10,
+    marginBottom: 30,
+  },
+  logout: {
+    width: "70%",
+    height: 50,
+    width: 140,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 10,
+    marginTop: 10,
+  },
+  textLogout: {
+    fontFamily: "open-sans",
+    fontSize: 16,
+    color: "white",
   },
 });
 

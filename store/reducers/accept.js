@@ -15,8 +15,11 @@ export default (state = initialState, action) => {
     case ACCEPT_USER: {
       const newAccept = new Acceptance(
         action.acceptData.id,
-        action.acceptData.requests,
-        action.acceptData.amount,
+        action.acceptData.requestId,
+        action.acceptData.requestName,
+        action.acceptData.requestAge,
+        action.acceptData.requestGender,
+        action.acceptData.totalRequest,
         action.acceptData.date
       );
       return {

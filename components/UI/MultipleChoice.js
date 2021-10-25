@@ -4,14 +4,14 @@ import CheckBox from "@react-native-community/checkbox";
 import PropTypes from "prop-types";
 
 const CSChoices = (props) => {
-  const { onChecked, value, title, id, currentId } = props;
+  const { onChecked, value, title, id, currentId, initialState } = props;
 
   const onCheckHandler = (val) => {
     if (val) {
       onChecked && onChecked(value, id);
       return;
     }
-    onChecked && onChecked(null, id);
+    onChecked && onChecked(initialState, id);
   };
 
   return (

@@ -40,7 +40,10 @@ export default (state = initialState, action) => {
         action.profileData.hostOffer,
         action.profileData.address,
         action.profileData.maxGuest,
-        action.profileData.sleepingArrangement
+        action.profileData.sleepingArrangement,
+        action.profileData.latitude,
+        action.profileData.longitude,
+        action.profileData.privatePushToken
       );
 
       const allProfileIndex = state.allProfile.findIndex(
@@ -75,7 +78,10 @@ export default (state = initialState, action) => {
         action.profileData.hostOffer,
         action.profileData.address,
         action.profileData.maxGuest,
-        action.profileData.sleepingArrangement
+        action.profileData.sleepingArrangement,
+        action.profileData.latitude,
+        action.profileData.longitude,
+        action.profileData.privatePushToken
       );
       return {
         ...state,

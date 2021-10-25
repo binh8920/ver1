@@ -1,20 +1,18 @@
 class Request {
   constructor(
     id,
-    profileId,
-    privateUserId,
+    hostPrivateUserId,
     profileName,
     profileGender,
     profileAge,
-    profileAddress
+    guestPushToken
   ) {
     (this.id = id),
-      (this.profileId = profileId),
-      (this.privateUserId = privateUserId),
+      (this.hostPrivateUserId = hostPrivateUserId),
       (this.profileName = profileName),
       (this.profileGender = profileGender),
       (this.profileAge = profileAge),
-      (this.profileAddress = profileAddress);
+      (this.guestPushToken = guestPushToken);
   }
 }
 

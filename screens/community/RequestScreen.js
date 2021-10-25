@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
   FlatList,
-  Button,
   StyleSheet,
   ActivityIndicator,
+  Alert,
+  ScrollView,
 } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 
@@ -18,36 +19,95 @@ import RequestItem from "../../components/request/RequestItem";
 const RequestScreen = (props) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [error, setError] = useState();
+
   const totalRequest = useSelector((state) => state.request.totalRequest);
-
-  const requestItems = useSelector((state) => {
-    const transformedRequestItems = [];
-    for (const key in state.request.requests) {
-      transformedRequestItems.push({
-        requestId: key,
-        profileId: state.request.requests[key].profileId,
-        privateUserId: state.request.requests[key].privateUserId,
-        profileName: state.request.requests[key].profileName,
-        profileGender: state.request.requests[key].profileGender,
-        profileAge: state.request.requests[key].profileAge,
-        profileAddress: state.request.requests[key].profileAddress,
-      });
-    }
-    return transformedRequestItems;
-  });
-
+  const requests = useSelector((state) => state.request.requests);
+  const privateId = useSelector(
+    (state) => state.profile.privateProfile.privateId
+  );
+  const privateRequests = requests.filter(
+    (req) => req.hostPrivateUserId === privateId
+  );
   const dispatch = useDispatch();
+  console.log(requests);
+
+  const loadRequests = useCallback(async () => {
+    setError(null);
+    setIsRefreshing(true);
+    try {
+      await dispatch(requestActions.fetchRequest());
+    } catch (err) {
+      setError(err.message);
+    }
+    setIsRefreshing(false);
+  }, [dispatch, setIsLoading, setError]);
+
+  useEffect(() => {
+    const willFocusSub = props.navigation.addListener(
+      "willFocus",
+      loadRequests
+    );
+    return () => {
+      willFocusSub.remove();
+    };
+  }, [loadRequests]);
 
   useEffect(() => {
     setIsFetching(true);
-    dispatch(requestActions.fetchRequest());
-  }, [dispatch]);
+    loadRequests().then(() => {
+      setIsFetching(false);
+    });
+  }, [dispatch, loadRequests]);
 
-  const acceptRequestHandler = async () => {
+  const deleteHandler = (id) => {
+    Alert.alert("Are you sure?", "Do you really want to delete this request?", [
+      { text: "No", style: "default" },
+      {
+        text: "Yes",
+        style: "destructive",
+        onPress: () => {
+          dispatch(requestActions.removeRequest(id));
+        },
+      },
+    ]);
+  };
+
+  const acceptRequestHandler = async (
+    requestId,
+    requestName,
+    requestAge,
+    requestGender,
+    totalRequest,
+    guestPushToken
+  ) => {
     setIsLoading(true);
-    await dispatch(acceptActions.acceptUser(requestItems, totalRequest));
+    await dispatch(
+      acceptActions.acceptUser(
+        requestId,
+        requestName,
+        requestAge,
+        requestGender,
+        totalRequest,
+        guestPushToken
+      )
+    );
     setIsLoading(false);
   };
+
+  if (error) {
+    return (
+      <View style={{ justifyContent: "center", alignItems: "center", flex: 1 }}>
+        <Text>An error occurred!</Text>
+        <Button
+          title="Try again"
+          onPress={loadRequests}
+          color={Colors.redOrange}
+        />
+      </View>
+    );
+  }
 
   if (isFetching) {
     <View style={styles.centered}>
@@ -56,39 +116,42 @@ const RequestScreen = (props) => {
   }
 
   return (
-    <View style={styles.screen}>
+    <ScrollView style={styles.screen}>
       <Card style={styles.summary}>
         <Text style={styles.summaryText}>
           Total Request: <Text style={styles.amount}>{totalRequest}</Text>
         </Text>
-        {isLoading ? (
-          <ActivityIndicator size="small" color={Colors.mango} />
-        ) : (
-          <Button
-            color={Colors.mango}
-            title="Accept Hosts"
-            disabled={requestItems.length === 0}
-            onPress={acceptRequestHandler}
-          />
-        )}
       </Card>
-      <FlatList
-        data={requestItems}
-        keyExtractor={(item) => item.requestId}
-        renderItem={(itemData) => (
-          <RequestItem
-            name={itemData.item.profileName}
-            gender={itemData.item.profileGender}
-            age={itemData.item.profileAge}
-            address={itemData.item.profileAddress}
-            deletable
-            onRemove={() => {
-              dispatch(requestActions.removeRequest(itemData.item.requestId));
-            }}
-          />
-        )}
-      />
-    </View>
+      {isLoading ? (
+        <ActivityIndicator style={styles.centered} size="large" />
+      ) : (
+        <FlatList
+          onRefresh={loadRequests}
+          refreshing={isRefreshing}
+          data={privateRequests}
+          keyExtractor={(item) => item.id}
+          renderItem={(itemData) => (
+            <RequestItem
+              name={itemData.item.profileName}
+              gender={itemData.item.profileGender}
+              age={itemData.item.profileAge}
+              delete
+              onRemove={deleteHandler.bind(this, itemData.item.id)}
+              accept
+              onAccept={acceptRequestHandler.bind(
+                this,
+                itemData.item.id,
+                itemData.item.profileName,
+                itemData.item.profileAge,
+                itemData.item.profileGender,
+                totalRequest,
+                itemData.item.guestPushToken
+              )}
+            />
+          )}
+        />
+      )}
+    </ScrollView>
   );
 };
 
